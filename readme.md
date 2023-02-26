@@ -1,6 +1,6 @@
 # Recommender Systems class
 
-Department of Mathematics and Computer Science, Adam Mickiewicz University, 2022
+Department of Mathematics and Computer Science, Adam Mickiewicz University, 2023
 
 Author: Piotr Zioło
 
