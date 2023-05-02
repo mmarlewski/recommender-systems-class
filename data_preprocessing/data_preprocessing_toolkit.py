@@ -145,14 +145,13 @@ class DataPreprocessingToolkit(object):
             is_weekend_stay = False
             for i in range((end_date - start_date).days):
                 day = (start_date+timedelta(days=i+1)).weekday()
-                if day in [4,5]:
+                if day in [5,6]:
                     is_weekend_stay = True
                     break
-            return is_weekend_stay
+            return str(is_weekend_stay)
         
-        df["weekend_stay"] = False
-        for index,row in df.iterrows():
-            row["weekend_stay"] = determine_weekend_stay(row["date_from"],row["date_to"])
+        df["weekend_stay"] = str(False)
+        df["weekend_stay"] = df.apply(lambda x:determine_weekend_stay(x["date_from"],x["date_to"]),axis=1)
         
         return df
 
@@ -167,7 +166,7 @@ class DataPreprocessingToolkit(object):
         :rtype: pd.DataFrame
         """
         
-        df["night_price"] = df["accommodation_price"] / (df["length_of_stay"]*df["n_rooms"])
+        df["night_price"] = round(df["accommodation_price"]/(df["length_of_stay"]*df["n_rooms"]),2)
         
         return df
 
@@ -246,17 +245,17 @@ class DataPreprocessingToolkit(object):
         # Then merge those columns into one dataset and finally concatenate the aggregated group reservations
         # to non_group_reservations
         
-        group_by_sum = df.groupby(by="group_id").sum()[self.sum_columns].reset_index()
-        group_by_mean = df.groupby(by="group_id").mean()[self.mean_columns].reset_index()
-        group_by_mode = df.groupby(by="group_id").agg(lambda x: x.value_counts().index.values[0])[self.mode_columns].reset_index()
-        group_by_first = df.groupby(by="group_id").first()[self.first_columns].reset_index()
+        group_by_sum = df.groupby("group_id").sum()[self.sum_columns]
+        group_by_mean = df.groupby("group_id").mean()[self.mean_columns]
+        group_by_mode = df.groupby("group_id").agg(lambda x: x.value_counts().index.values[0])[self.mode_columns]
+        group_by_first = df.groupby("group_id").first()[self.first_columns]
         
         df = group_by_sum
         df = pd.merge(df,group_by_mean,on="group_id")
         df = pd.merge(df,group_by_mode,on="group_id")
         df = pd.merge(df,group_by_first,on="group_id")
         
-        df = pd.concat([df,non_group_reservations])
+        df = pd.concat([non_group_reservations,df])
         
         return df
 
